@@ -47,7 +47,13 @@ TypeScript、Supabase、LangChainを活用した知的な質問応答システ�
 
 2. パッケージのインストール
    ```bash
+   # バックエンドの依存関係をインストール
    npm install
+
+   # フロントエンドの依存関係をインストール
+   cd frontend
+   npm install
+   cd ..
    ```
 
 3. 環境設定
@@ -65,15 +71,28 @@ TypeScript、Supabase、LangChainを活用した知的な質問応答システ�
    - init.sqlでテーブルを作成
    - update_agents.sqlで設定を適用
 
-5. サーバーの起動
-   ```bash
-   # バックエンド
-   npm run dev
+5. アプリケーションの起動 🎯
 
-   # フロントエンド（別ターミナルで）
+   バックエンドの起動:
+   ```bash
+   # ルートディレクトリで実行
+   npm run dev
+   ```
+   サーバーが http://localhost:3001 で起動します
+
+   フロントエンドの起動:
+   ```bash
+   # 新しいターミナルを開いて実行
    cd frontend
    npm run dev
    ```
+   アプリケーションが http://localhost:3000 で起動します
+
+   ※ 両方のサーバーを起動する必要があります。
+   
+   起動確認:
+   - フロントエンド: http://localhost:3000 にアクセス
+   - バックエンドAPI: http://localhost:3001/api/questions でテスト
 
 データベース構成 📚
 
