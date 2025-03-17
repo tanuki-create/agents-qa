@@ -24,7 +24,7 @@ Provide only the numerical score:
 export async function createQAAgent(apiKey: string): Promise<QAAgent> {
   const model = new ChatGoogleGenerativeAI({ 
     apiKey: apiKey,
-    modelName: "gemini-pro",
+    modelName: "gemini-2.0-flash",
     maxOutputTokens: 2048,
     temperature: 0.7
   });

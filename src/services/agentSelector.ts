@@ -34,7 +34,7 @@ export async function selectBestAgent(question: string): Promise<string> {
 
   const model = new ChatGoogleGenerativeAI({ 
     apiKey: process.env.GOOGLE_API_KEY || '',
-    modelName: "gemini-pro",
+    modelName: "gemini-2.0-flash",
     maxOutputTokens: 2048,
     temperature: 0.3
   });
