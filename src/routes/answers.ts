@@ -1,19 +1,8 @@
 import { Router } from 'express';
 import { supabase, TABLES } from '../config/supabase';
-import { createQAAgent } from '../agents/qaAgent';
+import { runQAWorkflow } from '../agents/agentGraph';
 
 const router = Router();
-
-// Initialize QA Agent
-let qaAgentPromise: Promise<any>;
-try {
-  console.log('🤖 Initializing QA Agent...');
-  qaAgentPromise = createQAAgent(process.env.GOOGLE_API_KEY || '');
-  console.log('✅ QA Agent initialized successfully');
-} catch (error) {
-  console.error('❌ Failed to initialize QA Agent:', error);
-  throw error;
-}
 
 // Generate answer for a question
 router.post('/', async (req, res) => {
@@ -63,58 +52,22 @@ router.post('/', async (req, res) => {
 
     console.log('✅ Found question:', question);
 
-    // Run QA Agent
-    console.log('🤖 Running QA Agent...');
-    const qaAgent = await qaAgentPromise;
-    const result = await qaAgent.invoke({
-      question: question.content,
-      context: ''
-    });
+    // Run QA workflow using LangGraph
+    console.log('🤖 Running QA workflow...');
+    const result = await runQAWorkflow(questionId, agentId);
 
-    console.log('✅ QA Agent result:', result);
+    console.log('✅ QA workflow result:', result);
 
-    // Get the best answer
-    const bestAnswer = result.answers[result.answers.length - 1];
-    const score = result.currentScore;
-
-    // Save answer to database
-    console.log('💾 Saving answer to database...');
-    const { data: answer, error: answerError } = await supabase
+    // Get the final answer from result
+    const { data: answer } = await supabase
       .from(TABLES.ANSWERS)
-      .insert({
-        question_id: questionId,
-        content: bestAnswer,
-        score,
-        agent_id: agentId,
-        created_at: new Date().toISOString()
-      })
-      .select()
+      .select('*')
+      .eq('question_id', questionId)
+      .order('created_at', { ascending: false })
+      .limit(1)
       .single();
 
-    if (answerError) {
-      console.error('❌ Error saving answer:', {
-        error: answerError,
-        details: answerError.details,
-        message: answerError.message
-      });
-      throw answerError;
-    }
-
-    console.log('✅ Answer saved:', answer);
-
-    // Update question status
-    console.log('📝 Updating question status...');
-    const { error: updateError } = await supabase
-      .from(TABLES.QUESTIONS)
-      .update({ status: 'answered' })
-      .eq('id', questionId);
-
-    if (updateError) {
-      console.error('❌ Error updating question status:', updateError);
-      throw updateError;
-    }
-
-    console.log('✅ Question status updated');
+    console.log('✅ Answer retrieved:', answer);
     res.json(answer);
   } catch (error) {
     console.error('❌ Error in answer generation:', error);
